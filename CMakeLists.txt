@@ -8,7 +8,7 @@ find_package(OpenMP REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(HWLOC REQUIRED IMPORTED_TARGET hwloc)
 
-add_executable(matrix_multiplication
+add_executable(adaptive_benchmark
     main.cpp
     hardware.cpp
     metrics.cpp
@@ -20,11 +20,11 @@ add_executable(matrix_multiplication
     workloads/image_workload.cpp
     workloads/compression_workload.cpp
 )
-target_link_libraries(matrix_multiplication PRIVATE
+target_link_libraries(adaptive_benchmark PRIVATE
     OpenMP::OpenMP_CXX
     PkgConfig::HWLOC
 )
 
 if(WIN32)
-    target_link_libraries(matrix_multiplication PRIVATE Psapi)
+    target_link_libraries(adaptive_benchmark PRIVATE Psapi)
 endif()

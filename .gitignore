@@ -1,0 +1,64 @@
+# CMake build tree — generated on every platform
+build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+
+# Ninja artefacts (used by MSYS2 / Ninja generator on Windows)
+.ninja_deps
+.ninja_log
+*.ninja
+
+# Compiled binaries
+adaptive_benchmark
+adaptive_benchmark.exe
+*.out
+*.o
+*.obj
+
+# Benchmark output — append-only at runtime, not part of source
+results.jsonl
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Visual Studio / MSVC
+.vs/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.sln
+*.suo
+*.user
+*.aps
+*.ncb
+*.opensdf
+*.sdf
+*.cachefile
+*.VC.db
+*.VC.opendb
+out/
+
+# CLion / JetBrains
+.idea/
+cmake-build-*/
+
+# VS Code
+.vscode/
+
+# Eclipse CDT
+.cproject
+.project
+.settings/
+
+# Emacs / Vim swap files
+*~
+*.swp
+*.swo
+\#*\#

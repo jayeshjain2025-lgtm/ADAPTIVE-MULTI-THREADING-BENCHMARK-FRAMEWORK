@@ -5,19 +5,32 @@
 #include <iomanip>
 #include <iostream>
 #include <fstream>
+#ifdef _WIN32
+#include <cstdlib>
+#include <windows.h>
+#else
 #include <sys/utsname.h>
+#endif
 #include <hwloc.h>
 #include <omp.h>
 
 namespace {
 std::string detect_os_name() {
+#ifdef _WIN32
+    return "Windows";
+#else
     struct utsname system_info {};
     return uname(&system_info) == 0
                ? std::string(system_info.sysname) + " " + system_info.release
                : "Unknown";
+#endif
 }
 
 std::string detect_cpu_model() {
+#ifdef _WIN32
+    const char* env_cpu = std::getenv("PROCESSOR_IDENTIFIER");
+    return env_cpu ? std::string(env_cpu) : "Unknown";
+#else
     std::ifstream cpuinfo("/proc/cpuinfo");
     std::string line;
     while (std::getline(cpuinfo, line)) {
@@ -25,6 +38,7 @@ std::string detect_cpu_model() {
         if (line.rfind(prefix, 0) == 0) return line.substr(prefix.size());
     }
     return "Unknown";
+#endif
 }
 }
 
@@ -42,7 +56,20 @@ HardwareTopology detect_hardware_topology() {
     topology.physical_cores = hwloc_get_nbobjs_by_type(hwloc_topology, HWLOC_OBJ_CORE);
     topology.logical_processors = hwloc_get_nbobjs_by_type(hwloc_topology, HWLOC_OBJ_PU);
     const hwloc_obj_t root = hwloc_get_root_obj(hwloc_topology);
+#ifdef _WIN32
+    // hwloc reports only usable memory on Windows; use GlobalMemoryStatusEx
+    // for the true installed physical RAM (same value as Task Manager shows).
+    {
+        MEMORYSTATUSEX mem_status {};
+        mem_status.dwLength = sizeof(mem_status);
+        if (GlobalMemoryStatusEx(&mem_status))
+            topology.total_memory = static_cast<long long>(mem_status.ullTotalPhys);
+        else if (root)
+            topology.total_memory = root->total_memory; // fallback
+    }
+#else
     if (root) topology.total_memory = root->total_memory;
+#endif
 
     const hwloc_obj_type_t cache_types[] = {
         HWLOC_OBJ_L1CACHE, HWLOC_OBJ_L2CACHE, HWLOC_OBJ_L3CACHE};

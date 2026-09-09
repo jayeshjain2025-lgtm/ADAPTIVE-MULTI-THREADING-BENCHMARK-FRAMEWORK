@@ -1,7 +1,7 @@
 {
 	"InstallScripts" : 
 	[
-		"/home/The-Honoured-One/projects/ADAPTIVE MULTI-THREADING BENCHMARK FRAMEWORK/build/cmake_install.cmake"
+		"C:/Users/chahe/benchmark-project/backend/build/cmake_install.cmake"
 	],
 	"Parallel" : false
 }

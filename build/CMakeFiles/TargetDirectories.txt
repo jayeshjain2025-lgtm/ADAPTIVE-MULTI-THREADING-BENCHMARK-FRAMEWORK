@@ -1,3 +1,0 @@
-C:/Users/chahe/benchmark-project/backend/build/CMakeFiles/adaptive_benchmark.dir
-C:/Users/chahe/benchmark-project/backend/build/CMakeFiles/ALL_BUILD.dir
-C:/Users/chahe/benchmark-project/backend/build/CMakeFiles/ZERO_CHECK.dir

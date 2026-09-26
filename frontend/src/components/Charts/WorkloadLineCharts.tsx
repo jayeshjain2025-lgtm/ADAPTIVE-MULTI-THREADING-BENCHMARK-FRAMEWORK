@@ -15,6 +15,7 @@ import { prepareLineChartData } from '../../utils/analysis';
 import { getOSColor, getFriendlyOSName, formatTime } from '../../utils/formatters';
 import { CustomChartTooltip } from './CustomChartTooltip';
 import { Clock, Cpu, TrendingUp, Gauge } from 'lucide-react';
+import { useTheme } from '../../context/useTheme';
 
 interface WorkloadLineChartsProps {
   records: BenchmarkRecord[];
@@ -25,6 +26,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
   records,
   selectedWorkload,
 }) => {
+  const { isDark } = useTheme();
   const [useLogScale, setUseLogScale] = useState(false);
 
   const { timeData, cpuData, speedupData, efficiencyData, threadCounts, osList } =
@@ -32,44 +34,46 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
 
   if (!records.length || !osList.length) {
     return (
-      <div className="bg-[#121620] border border-[#1f2737] rounded-lg p-6 text-center text-slate-500 font-mono text-xs">
+      <div className="bg-white dark:bg-[#121620] border border-slate-200 dark:border-[#1f2737] rounded-lg p-6 text-center text-slate-500 font-mono text-xs shadow-xs">
         NO TELEMETRY AVAILABLE FOR WORKLOAD: {selectedWorkload}
       </div>
     );
   }
 
-  // Common technical styling
-  const axisStroke = '#475569';
-  const gridStroke = '#1c2333';
+  // Common technical styling adapted to active theme
+  const axisStroke = isDark ? '#475569' : '#64748b';
+  const gridStroke = isDark ? '#1c2333' : '#e2e8f0';
+  const idealLinearStroke = isDark ? '#475569' : '#94a3b8';
+  const baselineStroke = isDark ? '#334155' : '#cbd5e1';
 
   return (
-    <div className="bg-[#121620] border border-[#1f2737] rounded-lg p-5 lg:p-6 space-y-5">
+    <div className="bg-white dark:bg-[#121620] border border-slate-200 dark:border-[#1f2737] rounded-lg p-5 lg:p-6 space-y-5 shadow-xs transition-colors">
       {/* Header bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#1f2737] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 dark:border-[#1f2737] pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               Workload Scaling Performance
             </span>
-            <span className="text-[#334155] font-mono">/</span>
-            <span className="font-mono text-[11px] text-sky-400">
+            <span className="text-slate-300 dark:text-[#334155] font-mono">/</span>
+            <span className="font-mono text-[11px] text-sky-600 dark:text-sky-400">
               {selectedWorkload}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
             Analyzing parallel speedup, wall clock execution time, CPU core utilization, and efficiency from {threadCounts[0]} to {threadCounts[threadCounts.length - 1]} threads across {osList.length} platforms.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <label className="flex items-center gap-2 text-xs text-slate-300 cursor-pointer font-mono bg-[#151a26] border border-[#232c3d] px-3 py-1.5 rounded-md hover:border-[#2f3b50] transition-colors">
+          <label className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 cursor-pointer font-mono bg-slate-100 dark:bg-[#151a26] border border-slate-200 dark:border-[#232c3d] px-3 py-1.5 rounded-md hover:border-slate-300 dark:hover:border-[#2f3b50] transition-colors">
             <input
               type="checkbox"
               checked={useLogScale}
               onChange={(e) => setUseLogScale(e.target.checked)}
-              className="rounded bg-[#0d1017] border-[#2d3950] text-sky-500 focus:ring-0 focus:ring-offset-0"
+              className="rounded bg-white dark:bg-[#0d1017] border-slate-300 dark:border-[#2d3950] text-sky-600 dark:text-sky-500 focus:ring-0 focus:ring-offset-0"
             />
-            <span className="text-slate-300 text-[11px]">Logarithmic Time Scale</span>
+            <span className="text-slate-700 dark:text-slate-300 text-[11px]">Logarithmic Time Scale</span>
           </label>
         </div>
       </div>
@@ -77,12 +81,12 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
       {/* Clean 2x2 Equal-Sized Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Chart 1: Execution Time vs Threads */}
-        <div className="bg-[#151a26] border border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
+        <div className="bg-slate-50/70 dark:bg-[#151a26] border border-slate-200 dark:border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-slate-400" />
+              <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <div>
-                <span className="font-mono text-xs font-bold text-slate-200 uppercase block">
+                <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 uppercase block">
                   Execution Time vs Threads
                 </span>
                 <span className="font-mono text-[10px] text-slate-500">
@@ -90,7 +94,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                 </span>
               </div>
             </div>
-            <span className="font-mono text-[10px] text-slate-500">time</span>
+            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">time</span>
           </div>
 
           <div className="h-64 w-full pt-1">
@@ -123,7 +127,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                   verticalAlign="top"
                   height={28}
                   formatter={(value) => (
-                    <span className="text-[11px] text-slate-300 font-mono mr-2">
+                    <span className="text-[11px] text-slate-700 dark:text-slate-300 font-mono mr-2">
                       {getFriendlyOSName(value)}
                     </span>
                   )}
@@ -133,10 +137,10 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                     key={os}
                     type="monotone"
                     dataKey={os}
-                    stroke={getOSColor(os)}
+                    stroke={getOSColor(os, isDark)}
                     strokeWidth={2}
-                    dot={{ fill: getOSColor(os), r: 3 }}
-                    activeDot={{ r: 5, stroke: '#fff', strokeWidth: 1.5 }}
+                    dot={{ fill: getOSColor(os, isDark), r: 3 }}
+                    activeDot={{ r: 5, stroke: isDark ? '#fff' : '#ffffff', strokeWidth: 2 }}
                   />
                 ))}
               </LineChart>
@@ -145,12 +149,12 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
         </div>
 
         {/* Chart 2: CPU Usage vs Threads */}
-        <div className="bg-[#151a26] border border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
+        <div className="bg-slate-50/70 dark:bg-[#151a26] border border-slate-200 dark:border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-slate-400" />
+              <Cpu className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <div>
-                <span className="font-mono text-xs font-bold text-slate-200 uppercase block">
+                <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 uppercase block">
                   CPU Utilization vs Threads
                 </span>
                 <span className="font-mono text-[10px] text-slate-500">
@@ -158,7 +162,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                 </span>
               </div>
             </div>
-            <span className="font-mono text-[10px] text-slate-500">utilization</span>
+            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">utilization</span>
           </div>
 
           <div className="h-64 w-full pt-1">
@@ -189,7 +193,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                   verticalAlign="top"
                   height={28}
                   formatter={(value) => (
-                    <span className="text-[11px] text-slate-300 font-mono mr-2">
+                    <span className="text-[11px] text-slate-700 dark:text-slate-300 font-mono mr-2">
                       {getFriendlyOSName(value)}
                     </span>
                   )}
@@ -199,10 +203,10 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                     key={os}
                     type="monotone"
                     dataKey={os}
-                    stroke={getOSColor(os)}
+                    stroke={getOSColor(os, isDark)}
                     strokeWidth={2}
-                    dot={{ fill: getOSColor(os), r: 3 }}
-                    activeDot={{ r: 5, stroke: '#fff', strokeWidth: 1.5 }}
+                    dot={{ fill: getOSColor(os, isDark), r: 3 }}
+                    activeDot={{ r: 5, stroke: isDark ? '#fff' : '#ffffff', strokeWidth: 2 }}
                   />
                 ))}
               </LineChart>
@@ -211,12 +215,12 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
         </div>
 
         {/* Chart 3: Speedup vs Threads */}
-        <div className="bg-[#151a26] border border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
+        <div className="bg-slate-50/70 dark:bg-[#151a26] border border-slate-200 dark:border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-slate-400" />
+              <TrendingUp className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <div>
-                <span className="font-mono text-xs font-bold text-slate-200 uppercase block">
+                <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 uppercase block">
                   Speedup vs Threads
                 </span>
                 <span className="font-mono text-[10px] text-slate-500">
@@ -224,7 +228,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                 </span>
               </div>
             </div>
-            <span className="font-mono text-[10px] text-slate-500">ratio</span>
+            <span className="font-mono text-[10px] text-slate-400 dark:text-slate-500">ratio</span>
           </div>
 
           <div className="h-64 w-full pt-1">
@@ -255,9 +259,9 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                   verticalAlign="top"
                   height={28}
                   formatter={(value) => {
-                    if (value === 'ideal_linear') return <span className="text-[10px] font-mono text-slate-500 italic">Ideal Linear</span>;
+                    if (value === 'ideal_linear') return <span className="text-[10px] font-mono text-slate-400 dark:text-slate-500 italic">Ideal Linear</span>;
                     return (
-                      <span className="text-[11px] text-slate-300 font-mono mr-2">
+                      <span className="text-[11px] text-slate-700 dark:text-slate-300 font-mono mr-2">
                         {getFriendlyOSName(value)}
                       </span>
                     );
@@ -268,7 +272,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                   type="monotone"
                   dataKey="ideal_linear"
                   name="Ideal Linear"
-                  stroke="#475569"
+                  stroke={idealLinearStroke}
                   strokeDasharray="3 3"
                   strokeWidth={1}
                   dot={false}
@@ -278,10 +282,10 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                     key={os}
                     type="monotone"
                     dataKey={os}
-                    stroke={getOSColor(os)}
+                    stroke={getOSColor(os, isDark)}
                     strokeWidth={2}
-                    dot={{ fill: getOSColor(os), r: 3 }}
-                    activeDot={{ r: 5, stroke: '#fff', strokeWidth: 1.5 }}
+                    dot={{ fill: getOSColor(os, isDark), r: 3 }}
+                    activeDot={{ r: 5, stroke: isDark ? '#fff' : '#ffffff', strokeWidth: 2 }}
                   />
                 ))}
               </LineChart>
@@ -290,12 +294,12 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
         </div>
 
         {/* Chart 4: Efficiency vs Threads */}
-        <div className="bg-[#151a26] border border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
+        <div className="bg-slate-50/70 dark:bg-[#151a26] border border-slate-200 dark:border-[#222b3b] rounded-md p-5 flex flex-col justify-between h-[360px]">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
-              <Gauge className="w-4 h-4 text-slate-400" />
+              <Gauge className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <div>
-                <span className="font-mono text-xs font-bold text-slate-200 uppercase block">
+                <span className="font-mono text-xs font-bold text-slate-800 dark:text-slate-200 uppercase block">
                   Parallel Efficiency vs Threads
                 </span>
                 <span className="font-mono text-[10px] text-slate-500">
@@ -303,7 +307,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                 </span>
               </div>
             </div>
-            <span className="font-mono text-[10px] text-rose-400">70% target</span>
+            <span className="font-mono text-[10px] text-rose-500 dark:text-rose-400">70% target</span>
           </div>
 
           <div className="h-64 w-full pt-1">
@@ -337,7 +341,7 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                   formatter={(value) => {
                     if (value === 'threshold_70') return null;
                     return (
-                      <span className="text-[11px] text-slate-300 font-mono mr-2">
+                      <span className="text-[11px] text-slate-700 dark:text-slate-300 font-mono mr-2">
                         {getFriendlyOSName(value)}
                       </span>
                     );
@@ -357,19 +361,20 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
                   }}
                 />
                 {/* 100% baseline */}
-                <ReferenceLine y={1.0} stroke="#334155" strokeDasharray="2 2" />
+                <ReferenceLine y={1.0} stroke={baselineStroke} strokeDasharray="2 2" />
 
                 {osList.map((os) => (
                   <Line
                     key={os}
                     type="monotone"
                     dataKey={os}
-                    stroke={getOSColor(os)}
+                    stroke={getOSColor(os, isDark)}
                     strokeWidth={2}
-                    dot={{ fill: getOSColor(os), r: 3 }}
-                    activeDot={{ r: 5, stroke: '#fff', strokeWidth: 1.5 }}
+                    dot={{ fill: getOSColor(os, isDark), r: 3 }}
+                    activeDot={{ r: 5, stroke: isDark ? '#fff' : '#ffffff', strokeWidth: 2 }}
                   />
                 ))}
+
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -378,3 +383,4 @@ export const WorkloadLineCharts: React.FC<WorkloadLineChartsProps> = ({
     </div>
   );
 };
+

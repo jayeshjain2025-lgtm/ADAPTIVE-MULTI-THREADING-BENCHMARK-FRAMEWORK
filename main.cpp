@@ -18,19 +18,19 @@ int main() {
 
     print_hardware(topology);
 
-    MatrixWorkload matrix(900, 1600, 900);
+    MatrixWorkload matrix(300, 400, 300);
     run_benchmark(matrix, topology, thread_counts, results_path, session_id);
 
-    PrimeWorkload primes(50000000);
+    PrimeWorkload primes(500000);
     run_benchmark(primes, topology, thread_counts, results_path, session_id);
 
-    MergeSortWorkload merge_sort(1000000);
+    MergeSortWorkload merge_sort(10000);
     run_benchmark(merge_sort, topology, thread_counts, results_path, session_id);
 
     ImageWorkload image(2048, 2048);
     run_benchmark(image, topology, thread_counts, results_path, session_id);
 
-    CompressionWorkload compression(64 * 1024 * 1024);
+    CompressionWorkload compression(32 * 512 * 512);
     run_benchmark(compression, topology, thread_counts, results_path, session_id);
 
     const std::vector<BenchmarkRun> persisted_runs = load_runs(results_path);

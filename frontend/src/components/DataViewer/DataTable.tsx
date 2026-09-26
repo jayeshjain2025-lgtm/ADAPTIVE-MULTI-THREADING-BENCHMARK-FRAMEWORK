@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import type { BenchmarkRecord } from '../../types/benchmark';
 import { formatTime, formatBytes, getFriendlyOSName, getOSColor } from '../../utils/formatters';
 import { Database, Search, ChevronDown, ChevronUp } from 'lucide-react';
+import { useTheme } from '../../context/useTheme';
 
 interface DataTableProps {
   records: BenchmarkRecord[];
@@ -21,6 +22,7 @@ interface OSAveragedData {
 }
 
 export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload }) => {
+  const { isDark } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [expandedOS, setExpandedOS] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
@@ -88,37 +90,37 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
   if (!records.length) return null;
 
   return (
-    <div className="bg-[#121620] border border-[#1f2737] rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-[#121620] border border-slate-200 dark:border-[#1f2737] rounded-lg overflow-hidden shadow-xs transition-colors">
       {/* Outer Collapsible Header */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-5 lg:px-6 py-3.5 flex items-center justify-between bg-[#121620] hover:bg-[#151a26] transition-colors text-left"
+        className="w-full px-5 lg:px-6 py-3.5 flex items-center justify-between bg-white dark:bg-[#121620] hover:bg-slate-50 dark:hover:bg-[#151a26] transition-colors text-left"
       >
-        <div className="flex items-center gap-2.5 font-mono text-xs font-bold text-slate-300">
-          <Database className="w-3.5 h-3.5 text-slate-400" />
+        <div className="flex items-center gap-2.5 font-mono text-xs font-bold text-slate-700 dark:text-slate-300">
+          <Database className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
           <span className="uppercase tracking-wider">Telemetry Inspector</span>
-          <span className="text-[#334155]">/</span>
-          <span className="text-slate-400 font-normal">
+          <span className="text-slate-300 dark:text-[#334155]">/</span>
+          <span className="text-slate-500 dark:text-slate-400 font-normal">
             {osAveragedList.length} platform{osAveragedList.length > 1 ? 's' : ''} ({records.length} total datapoints)
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-400">
+        <div className="flex items-center gap-1.5 text-xs font-mono text-slate-500 dark:text-slate-400">
           <span>{isOpen ? 'COLLAPSE TABLE' : 'EXPAND TABLE'}</span>
           {isOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </div>
       </button>
 
       {isOpen && (
-        <div className="p-5 lg:p-6 border-t border-[#1f2737] space-y-4">
+        <div className="p-5 lg:p-6 border-t border-slate-200 dark:border-[#1f2737] space-y-4">
           {/* Subheader with global expand/collapse toggle */}
           <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-            <span className="text-slate-400 text-[11px]">
+            <span className="text-slate-600 dark:text-slate-400 text-[11px]">
               Averaged summary across all workloads and thread counts. Expand any platform to inspect granular runs.
             </span>
             {osAveragedList.length > 1 && (
               <button
                 onClick={toggleAll}
-                className="px-2.5 py-1 rounded bg-[#1c2333] hover:bg-[#252f44] border border-[#2d3950] text-slate-300 text-[11px] transition-colors"
+                className="px-2.5 py-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#1c2333] dark:hover:bg-[#252f44] border border-slate-300 dark:border-[#2d3950] text-slate-700 dark:text-slate-300 text-[11px] transition-colors"
               >
                 {expandedOS.size === osAveragedList.length
                   ? 'Collapse All Breakdowns'
@@ -128,9 +130,9 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
           </div>
 
           {/* Main Table: ONE row per OS with averaged metrics */}
-          <div className="overflow-x-auto rounded border border-[#222b3b]">
+          <div className="overflow-x-auto rounded border border-slate-200 dark:border-[#222b3b]">
             <table className="w-full text-left border-collapse">
-              <thead className="bg-[#0f131c] text-slate-400 font-mono text-[10px] uppercase tracking-wider border-b border-[#222b3b]">
+              <thead className="bg-slate-100 dark:bg-[#0f131c] text-slate-600 dark:text-slate-400 font-mono text-[10px] uppercase tracking-wider border-b border-slate-200 dark:border-[#222b3b]">
                 <tr>
                   <th className="py-3 px-4">Operating System / Platform</th>
                   <th className="py-3 px-4 text-center">Datapoints</th>
@@ -141,10 +143,10 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                   <th className="py-3 px-4 text-right">Breakdown</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#1e2637] font-mono text-xs">
+              <tbody className="divide-y divide-slate-200 dark:divide-[#1e2637] font-mono text-xs">
                 {osAveragedList.map((item) => {
                   const isExpanded = expandedOS.has(item.os);
-                  const osColor = getOSColor(item.os);
+                  const osColor = getOSColor(item.os, isDark);
 
                   // Filter detailed records for this OS if expanded
                   const detailedRecords = item.records.filter((r) => {
@@ -163,7 +165,7 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                   return (
                     <React.Fragment key={item.os}>
                       {/* Clean Averaged Row Per OS */}
-                      <tr className="hover:bg-[#161c28] transition-colors">
+                      <tr className="hover:bg-slate-50 dark:hover:bg-[#161c28] transition-colors">
                         {/* OS / Platform */}
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-2.5">
@@ -172,11 +174,11 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                               style={{ backgroundColor: osColor }}
                             />
                             <div className="min-w-0">
-                              <div className="font-sans font-semibold text-slate-100 text-xs truncate">
+                              <div className="font-sans font-semibold text-slate-800 dark:text-slate-100 text-xs truncate">
                                 {getFriendlyOSName(item.os)}
                               </div>
                               <div
-                                className="font-mono text-[10px] text-slate-400 truncate max-w-sm mt-0.5"
+                                className="font-mono text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-sm mt-0.5"
                                 title={item.os}
                               >
                                 {item.os} · {item.hardwareCpu}
@@ -186,29 +188,29 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                         </td>
 
                         {/* Datapoints */}
-                        <td className="py-3.5 px-4 text-center text-slate-400">
-                          <span className="px-2 py-0.5 rounded bg-[#151a26] border border-[#232c3d] text-[11px]">
+                        <td className="py-3.5 px-4 text-center text-slate-500 dark:text-slate-400">
+                          <span className="px-2 py-0.5 rounded bg-slate-100 dark:bg-[#151a26] border border-slate-200 dark:border-[#232c3d] text-[11px]">
                             {item.totalRecords} runs
                           </span>
                         </td>
 
                         {/* Mean Speedup */}
-                        <td className="py-3.5 px-4 text-right text-slate-100 font-bold">
+                        <td className="py-3.5 px-4 text-right text-slate-900 dark:text-slate-100 font-bold">
                           {item.meanSpeedup.toFixed(2)}x
                         </td>
 
                         {/* Mean Efficiency */}
-                        <td className="py-3.5 px-4 text-right text-slate-100 font-bold">
+                        <td className="py-3.5 px-4 text-right text-slate-900 dark:text-slate-100 font-bold">
                           {(item.meanEfficiency * 100).toFixed(1)}%
                         </td>
 
                         {/* Mean CPU Core % */}
-                        <td className="py-3.5 px-4 text-right text-emerald-400 font-semibold">
+                        <td className="py-3.5 px-4 text-right text-emerald-600 dark:text-emerald-400 font-semibold">
                           {item.meanCpuUtilization.toFixed(0)}%
                         </td>
 
                         {/* Involuntary Context Switches (Mean) */}
-                        <td className="py-3.5 px-4 text-right text-slate-200">
+                        <td className="py-3.5 px-4 text-right text-slate-700 dark:text-slate-200">
                           {Math.round(item.meanInvoluntarySwitches).toLocaleString()}
                         </td>
 
@@ -218,15 +220,15 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                             onClick={() => toggleOS(item.os)}
                             className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-[11px] font-mono transition-colors ${
                               isExpanded
-                                ? 'bg-[#1e2638] text-sky-300 border border-sky-500/40'
-                                : 'bg-[#151a26] text-slate-300 hover:text-white border border-[#232c3d] hover:border-[#2f3b50]'
+                                ? 'bg-sky-100 dark:bg-[#1e2638] text-sky-700 dark:text-sky-300 border border-sky-400 dark:border-sky-500/40'
+                                : 'bg-slate-100 dark:bg-[#151a26] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-300 dark:border-[#232c3d] hover:border-slate-400 dark:hover:border-[#2f3b50]'
                             }`}
                           >
                             <span>{isExpanded ? 'Hide breakdown' : 'Show detailed breakdown'}</span>
                             {isExpanded ? (
-                              <ChevronUp className="w-3 h-3 text-sky-400" />
+                              <ChevronUp className="w-3 h-3 text-sky-600 dark:text-sky-400" />
                             ) : (
-                              <ChevronDown className="w-3 h-3 text-slate-400" />
+                              <ChevronDown className="w-3 h-3 text-slate-500 dark:text-slate-400" />
                             )}
                           </button>
                         </td>
@@ -235,15 +237,15 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                       {/* Expandable Detailed Breakdown Sub-Table */}
                       {isExpanded && (
                         <tr>
-                          <td colSpan={7} className="p-0 bg-[#0d1017]">
-                            <div className="p-4 border-t border-b border-[#222b3b] space-y-3">
+                          <td colSpan={7} className="p-0 bg-slate-50 dark:bg-[#0d1017]">
+                            <div className="p-4 border-t border-b border-slate-200 dark:border-[#222b3b] space-y-3">
                               {/* Sub-table filter bar */}
                               <div className="flex flex-wrap items-center justify-between gap-3 font-mono text-[11px]">
                                 <div className="flex items-center gap-2">
-                                  <span className="text-slate-400 font-bold uppercase">
+                                  <span className="text-slate-500 dark:text-slate-400 font-bold uppercase">
                                     Granular Runs:
                                   </span>
-                                  <span className="text-slate-300">
+                                  <span className="text-slate-700 dark:text-slate-300">
                                     {detailedRecords.length} of {item.records.length} records
                                   </span>
                                 </div>
@@ -251,13 +253,13 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                                 <div className="flex items-center gap-3">
                                   {/* Search */}
                                   <div className="relative">
-                                    <Search className="w-3 h-3 text-slate-500 absolute left-2.5 top-2" />
+                                    <Search className="w-3 h-3 text-slate-400 dark:text-slate-500 absolute left-2.5 top-2" />
                                     <input
                                       type="text"
                                       placeholder="Filter workload/threads..."
                                       value={searchTerm}
                                       onChange={(e) => setSearchTerm(e.target.value)}
-                                      className="bg-[#121620] border border-[#222a3a] rounded pl-7 pr-2.5 py-1 text-[11px] text-slate-200 placeholder-slate-500 focus:outline-none focus:border-sky-400"
+                                      className="bg-white dark:bg-[#121620] border border-slate-300 dark:border-[#222a3a] rounded pl-7 pr-2.5 py-1 text-[11px] text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-sky-500"
                                     />
                                   </div>
 
@@ -267,8 +269,8 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                                       onClick={() => setFilterWorkload('all')}
                                       className={`px-2 py-0.5 rounded text-[10px] transition-colors ${
                                         filterWorkload === 'all'
-                                          ? 'bg-[#1e2638] text-slate-100 font-semibold'
-                                          : 'bg-[#121620] text-slate-400 hover:text-slate-200 border border-[#222a3a]'
+                                          ? 'bg-slate-200 dark:bg-[#1e2638] text-slate-900 dark:text-slate-100 font-semibold'
+                                          : 'bg-white dark:bg-[#121620] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-300 dark:border-[#222a3a]'
                                       }`}
                                     >
                                       All Workloads
@@ -277,8 +279,8 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                                       onClick={() => setFilterWorkload('selected')}
                                       className={`px-2 py-0.5 rounded text-[10px] transition-colors ${
                                         filterWorkload === 'selected'
-                                          ? 'bg-[#1e2638] text-slate-100 font-semibold'
-                                          : 'bg-[#121620] text-slate-400 hover:text-slate-200 border border-[#222a3a]'
+                                          ? 'bg-slate-200 dark:bg-[#1e2638] text-slate-900 dark:text-slate-100 font-semibold'
+                                          : 'bg-white dark:bg-[#121620] text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 border border-slate-300 dark:border-[#222a3a]'
                                       }`}
                                     >
                                       {selectedWorkload}
@@ -288,9 +290,9 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                               </div>
 
                               {/* Detailed table */}
-                              <div className="overflow-x-auto rounded border border-[#1f2737] max-h-72">
+                              <div className="overflow-x-auto rounded border border-slate-200 dark:border-[#1f2737] max-h-72">
                                 <table className="w-full text-left border-collapse">
-                                  <thead className="bg-[#141924] text-slate-400 font-mono text-[9px] uppercase sticky top-0 border-b border-[#1f2737]">
+                                  <thead className="bg-slate-100 dark:bg-[#141924] text-slate-600 dark:text-slate-400 font-mono text-[9px] uppercase sticky top-0 border-b border-slate-200 dark:border-[#1f2737]">
                                     <tr>
                                       <th className="py-2 px-3">Workload</th>
                                       <th className="py-2 px-3 text-center">Threads</th>
@@ -302,34 +304,34 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
                                       <th className="py-2 px-3 text-right">Peak RAM</th>
                                     </tr>
                                   </thead>
-                                  <tbody className="divide-y divide-[#1b2230] font-mono text-[11px]">
+                                  <tbody className="divide-y divide-slate-200 dark:divide-[#1b2230] font-mono text-[11px]">
                                     {detailedRecords.map((r, i) => (
-                                      <tr key={i} className="hover:bg-[#161c28] transition-colors">
-                                        <td className="py-1.5 px-3 text-slate-300">
-                                          <span>{r.workload.name}</span>
-                                          <span className="text-[10px] text-slate-500 ml-1.5">
+                                      <tr key={i} className="hover:bg-slate-100/60 dark:hover:bg-[#161c28] transition-colors">
+                                        <td className="py-1.5 px-3 text-slate-700 dark:text-slate-300">
+                                          <span className="text-slate-800 dark:text-slate-200 font-medium">{r.workload.name}</span>
+                                          <span className="text-[10px] text-slate-400 dark:text-slate-500 ml-1.5">
                                             [{r.workload.type}]
                                           </span>
                                         </td>
-                                        <td className="py-1.5 px-3 text-center text-sky-400 font-bold">
+                                        <td className="py-1.5 px-3 text-center text-sky-700 dark:text-sky-400 font-bold">
                                           {r.configuration.thread_count}
                                         </td>
-                                        <td className="py-1.5 px-3 text-right text-slate-200">
+                                        <td className="py-1.5 px-3 text-right text-slate-700 dark:text-slate-200">
                                           {formatTime(r.measurements.wall_time_microseconds)}
                                         </td>
-                                        <td className="py-1.5 px-3 text-right text-emerald-400">
+                                        <td className="py-1.5 px-3 text-right text-emerald-600 dark:text-emerald-400 font-semibold">
                                           {r.measurements.cpu_utilization_percent.toFixed(1)}%
                                         </td>
-                                        <td className="py-1.5 px-3 text-right text-slate-100 font-bold">
+                                        <td className="py-1.5 px-3 text-right text-slate-900 dark:text-slate-100 font-bold">
                                           {r.derived.speedup.toFixed(2)}x
                                         </td>
-                                        <td className="py-1.5 px-3 text-right text-slate-100 font-bold">
+                                        <td className="py-1.5 px-3 text-right text-slate-900 dark:text-slate-100 font-bold">
                                           {(r.derived.efficiency * 100).toFixed(1)}%
                                         </td>
-                                        <td className="py-1.5 px-3 text-right text-slate-400">
+                                        <td className="py-1.5 px-3 text-right text-slate-600 dark:text-slate-400">
                                           {r.measurements.involuntary_context_switches}
                                         </td>
-                                        <td className="py-1.5 px-3 text-right text-slate-400">
+                                        <td className="py-1.5 px-3 text-right text-slate-600 dark:text-slate-400">
                                           {formatBytes(r.measurements.peak_memory_bytes)}
                                         </td>
                                       </tr>
@@ -352,3 +354,4 @@ export const DataTable: React.FC<DataTableProps> = ({ records, selectedWorkload 
     </div>
   );
 };
+

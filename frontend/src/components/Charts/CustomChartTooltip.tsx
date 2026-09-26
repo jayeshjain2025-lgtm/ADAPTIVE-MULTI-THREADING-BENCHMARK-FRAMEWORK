@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatTime, formatPercent, getFriendlyOSName, getOSColor } from '../../utils/formatters';
+import { useTheme } from '../../context/useTheme';
 
 interface CustomTooltipProps {
   active?: boolean;
@@ -14,12 +15,13 @@ export const CustomChartTooltip: React.FC<CustomTooltipProps> = ({
   label,
   metricType,
 }) => {
+  const { isDark } = useTheme();
   if (!active || !payload || !payload.length) return null;
 
   return (
-    <div className="bg-[#0f131a] border border-[#232b3b] rounded p-2.5 text-xs text-slate-200 max-w-sm">
-      <div className="border-b border-[#232b3b] pb-1 mb-2 font-mono text-[11px] text-slate-400 flex items-center justify-between">
-        <span>THREADS: <strong className="text-slate-100">{label}</strong></span>
+    <div className="bg-white dark:bg-[#0f131a] border border-slate-200 dark:border-[#232b3b] rounded p-2.5 text-xs text-slate-800 dark:text-slate-200 max-w-sm shadow-lg">
+      <div className="border-b border-slate-200 dark:border-[#232b3b] pb-1 mb-2 font-mono text-[11px] text-slate-500 dark:text-slate-400 flex items-center justify-between">
+        <span>THREADS: <strong className="text-slate-900 dark:text-slate-100">{label}</strong></span>
       </div>
 
       <div className="space-y-2">
@@ -35,7 +37,7 @@ export const CustomChartTooltip: React.FC<CustomTooltipProps> = ({
 
           const osName = entry.dataKey;
           const meta = entry.payload?.[`${osName}_meta`];
-          const osColor = getOSColor(osName);
+          const osColor = getOSColor(osName, isDark);
 
           let formattedValue = entry.value;
           if (metricType === 'time') formattedValue = formatTime(entry.value);
@@ -46,19 +48,19 @@ export const CustomChartTooltip: React.FC<CustomTooltipProps> = ({
           return (
             <div key={index} className="border-l-2 pl-2" style={{ borderColor: osColor }}>
               <div className="flex justify-between items-center text-xs">
-                <span className="font-medium text-slate-300 truncate max-w-[160px]" title={osName}>
+                <span className="font-medium text-slate-700 dark:text-slate-300 truncate max-w-[160px]" title={osName}>
                   {getFriendlyOSName(osName)}
                 </span>
-                <span className="font-mono font-bold text-slate-100 ml-2">{formattedValue}</span>
+                <span className="font-mono font-bold text-slate-900 dark:text-slate-100 ml-2">{formattedValue}</span>
               </div>
 
               {meta && (
-                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 mt-1 text-[10px] font-mono text-slate-400">
-                  <div>Wall time: <span className="text-slate-200">{formatTime(meta.measurements.wall_time_microseconds)}</span></div>
-                  <div>CPU: <span className="text-slate-200">{meta.measurements.cpu_utilization_percent.toFixed(0)}%</span></div>
-                  <div>Speedup: <span className="text-slate-200">{meta.derived.speedup.toFixed(2)}x</span></div>
-                  <div>Efficiency: <span className="text-slate-200">{(meta.derived.efficiency * 100).toFixed(1)}%</span></div>
-                  <div className="col-span-2 text-[9px] text-slate-500 pt-0.5 border-t border-[#1a212f]">
+                <div className="grid grid-cols-2 gap-x-2 gap-y-0.5 mt-1 text-[10px] font-mono text-slate-600 dark:text-slate-400">
+                  <div>Wall time: <span className="text-slate-800 dark:text-slate-200 font-semibold">{formatTime(meta.measurements.wall_time_microseconds)}</span></div>
+                  <div>CPU: <span className="text-slate-800 dark:text-slate-200 font-semibold">{meta.measurements.cpu_utilization_percent.toFixed(0)}%</span></div>
+                  <div>Speedup: <span className="text-slate-800 dark:text-slate-200 font-semibold">{meta.derived.speedup.toFixed(2)}x</span></div>
+                  <div>Efficiency: <span className="text-slate-800 dark:text-slate-200 font-semibold">{(meta.derived.efficiency * 100).toFixed(1)}%</span></div>
+                  <div className="col-span-2 text-[9px] text-slate-400 dark:text-slate-500 pt-0.5 border-t border-slate-100 dark:border-[#1a212f]">
                     Switches: vol {meta.measurements.voluntary_context_switches} · invol {meta.measurements.involuntary_context_switches}
                   </div>
                 </div>
@@ -70,3 +72,4 @@ export const CustomChartTooltip: React.FC<CustomTooltipProps> = ({
     </div>
   );
 };
+

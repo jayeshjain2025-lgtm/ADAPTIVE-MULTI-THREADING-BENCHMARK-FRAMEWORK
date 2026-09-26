@@ -62,36 +62,48 @@ export function getShortOSName(osString: string): string {
 
 
 // Deterministic OS color mapping: ensures Windows, Linux Native, WSL2, macOS have constant, deliberate colors everywhere
-const KNOWN_OS_COLORS: Array<{ match: (s: string) => boolean; color: string }> = [
-  // WSL2: Crisp Sky Blue
+// Configured with high-contrast pairs tailored for dark mode vs light mode
+interface OSColorEntry {
+  match: (s: string) => boolean;
+  darkColor: string;
+  lightColor: string;
+}
+
+const KNOWN_OS_COLORS: OSColorEntry[] = [
+  // WSL2: Crisp Sky Blue in dark mode / Saturated Sapphire Blue in light mode
   {
     match: (s) => s.includes('WSL2') || s.includes('microsoft'),
-    color: '#38bdf8',
+    darkColor: '#38bdf8', // Sky 400
+    lightColor: '#0284c7', // Sky 600 (rich, high contrast on light backgrounds)
   },
-  // Linux Native / Fedora: High-contrast Emerald / Terminal Green
+  // Linux Native / Fedora: Luminescent Emerald in dark mode / Deep Forest Emerald in light mode
   {
     match: (s) => s.includes('fc44') || s.includes('fc') || s.toLowerCase().includes('fedora') || s.toLowerCase().includes('linux'),
-    color: '#4ade80',
+    darkColor: '#4ade80', // Green 400
+    lightColor: '#059669', // Emerald 600 (crisp, deep contrast)
   },
-  // Windows Native: Royal Cobalt Blue
+  // Windows Native: Royal Blue in dark mode / Deep Cobalt in light mode
   {
     match: (s) => s.toLowerCase().includes('windows'),
-    color: '#60a5fa',
+    darkColor: '#60a5fa', // Blue 400
+    lightColor: '#2563eb', // Blue 600
   },
-  // macOS: Warm Amber Gold
+  // macOS: Warm Amber in dark mode / Deep Ochre in light mode
   {
     match: (s) => s.toLowerCase().includes('darwin') || s.toLowerCase().includes('macos') || s.toLowerCase().includes('apple'),
-    color: '#fbbf24',
+    darkColor: '#fbbf24', // Amber 400
+    lightColor: '#d97706', // Amber 600
   },
-  // FreeBSD / BSD: Coral Red
+  // FreeBSD / BSD: Coral Red in dark mode / Deep Crimson in light mode
   {
     match: (s) => s.toLowerCase().includes('bsd'),
-    color: '#f87171',
+    darkColor: '#f87171', // Red 400
+    lightColor: '#dc2626', // Red 600
   },
 ];
 
 // Fallback high-contrast engineering colors
-const FALLBACK_ENGINEERING_PALETTE = [
+const FALLBACK_PALETTE_DARK = [
   '#38bdf8', // Sky Blue
   '#4ade80', // Emerald Green
   '#fbbf24', // Amber
@@ -101,18 +113,36 @@ const FALLBACK_ENGINEERING_PALETTE = [
   '#fb923c', // Orange
 ];
 
+const FALLBACK_PALETTE_LIGHT = [
+  '#0284c7', // Deep Sky
+  '#059669', // Deep Emerald
+  '#d97706', // Deep Amber
+  '#7c3aed', // Deep Violet
+  '#db2777', // Deep Rose/Pink
+  '#0d9488', // Deep Teal
+  '#ea580c', // Deep Orange
+];
+
 /**
  * Returns a consistent, distinct color for an OS across all charts, tables, and panels.
+ * Adapts dynamically between Dark mode and Light mode palettes.
  */
-export function getOSColor(osNameOrIndex: string | number): string {
+export function getOSColor(osNameOrIndex: string | number, isDark?: boolean): string {
+  // If isDark is not passed, check the <html> classList directly in browser environment
+  const activeDark = isDark !== undefined
+    ? isDark
+    : (typeof document !== 'undefined' ? document.documentElement.classList.contains('dark') : true);
+
+  const fallbackList = activeDark ? FALLBACK_PALETTE_DARK : FALLBACK_PALETTE_LIGHT;
+
   if (typeof osNameOrIndex === 'number') {
-    return FALLBACK_ENGINEERING_PALETTE[osNameOrIndex % FALLBACK_ENGINEERING_PALETTE.length];
+    return fallbackList[osNameOrIndex % fallbackList.length];
   }
 
   const osStr = String(osNameOrIndex || '');
   for (const entry of KNOWN_OS_COLORS) {
     if (entry.match(osStr)) {
-      return entry.color;
+      return activeDark ? entry.darkColor : entry.lightColor;
     }
   }
 
@@ -122,6 +152,7 @@ export function getOSColor(osNameOrIndex: string | number): string {
     hash = (hash << 5) - hash + osStr.charCodeAt(i);
     hash |= 0;
   }
-  const idx = Math.abs(hash) % FALLBACK_ENGINEERING_PALETTE.length;
-  return FALLBACK_ENGINEERING_PALETTE[idx];
+  const idx = Math.abs(hash) % fallbackList.length;
+  return fallbackList[idx];
 }
+

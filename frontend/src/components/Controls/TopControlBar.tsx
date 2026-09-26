@@ -3,6 +3,7 @@ import { WORKLOAD_NAMES } from '../../utils/analysis';
 import type { UploadedFileMeta, BenchmarkRecord } from '../../types/benchmark';
 import { formatBytes, getFriendlyOSName, getOSColor } from '../../utils/formatters';
 import { Upload, Trash2, AlertCircle, Check } from 'lucide-react';
+import { useTheme } from '../../context/useTheme';
 
 interface TopControlBarProps {
   files: UploadedFileMeta[];
@@ -51,6 +52,7 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
   parseErrors,
   onClearErrors,
 }) => {
+  const { isDark } = useTheme();
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -86,16 +88,16 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
   const activeConfig = WORKLOAD_CONFIG[selectedWorkload];
 
   return (
-    <div className="bg-[#121620] border border-[#1f2737] rounded-lg p-5 lg:p-6 space-y-5">
+    <div className="bg-white dark:bg-[#121620] border border-slate-200 dark:border-[#1f2737] rounded-lg p-5 lg:p-6 space-y-5 shadow-xs transition-colors">
       {/* 2-Column Responsive Layout: Upload (left) + Workload Selector (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: File Ingestion (5 cols) */}
         <div className="lg:col-span-5 flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               1. Telemetry Ingestion
             </span>
-            <span className="font-mono text-[11px] text-slate-500">
+            <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500">
               JSONL Format
             </span>
           </div>
@@ -108,8 +110,8 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
             onClick={() => fileInputRef.current?.click()}
             className={`border border-dashed rounded-md p-4 text-center cursor-pointer transition-colors ${
               isDragging
-                ? 'border-sky-500 bg-[#172233] text-sky-300'
-                : 'border-[#263246] bg-[#141924] hover:border-[#384863] text-slate-400'
+                ? 'border-sky-500 bg-sky-50 dark:bg-[#172233] text-sky-600 dark:text-sky-300'
+                : 'border-slate-300 dark:border-[#263246] bg-slate-50 dark:bg-[#141924] hover:border-slate-400 dark:hover:border-[#384863] text-slate-600 dark:text-slate-400'
             }`}
           >
             <input
@@ -120,30 +122,30 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
               onChange={handleFileInput}
               className="hidden"
             />
-            <div className="flex items-center justify-center gap-2 text-slate-300 text-xs font-medium">
+            <div className="flex items-center justify-center gap-2 text-slate-700 dark:text-slate-300 text-xs font-medium">
               <Upload className="w-3.5 h-3.5 text-slate-400" />
-              <span>Drop .jsonl files here or <span className="text-sky-400 underline">browse</span></span>
+              <span>Drop .jsonl files here or <span className="text-sky-600 dark:text-sky-400 underline">browse</span></span>
             </div>
-            <p className="text-[11px] font-mono text-slate-500 mt-1">
+            <p className="text-[11px] font-mono text-slate-400 dark:text-slate-500 mt-1">
               Supports multiple OS run files simultaneously
             </p>
           </div>
 
           {/* Parse errors alert */}
           {parseErrors.length > 0 && (
-            <div className="p-2.5 rounded bg-[#20151a] border border-rose-900/60 text-rose-300 text-xs space-y-1">
+            <div className="p-2.5 rounded bg-rose-50 dark:bg-[#20151a] border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-xs space-y-1">
               <div className="flex items-center justify-between font-mono text-[11px]">
                 <span className="flex items-center gap-1.5 font-bold">
                   <AlertCircle className="w-3.5 h-3.5" /> Parse Issues ({parseErrors.length})
                 </span>
                 <button
                   onClick={onClearErrors}
-                  className="text-[10px] text-rose-400 hover:underline font-mono"
+                  className="text-[10px] text-rose-600 dark:text-rose-400 hover:underline font-mono"
                 >
                   Dismiss
                 </button>
               </div>
-              <div className="max-h-16 overflow-y-auto text-[10px] font-mono text-rose-300/80 space-y-0.5">
+              <div className="max-h-16 overflow-y-auto text-[10px] font-mono text-rose-600/90 dark:text-rose-300/80 space-y-0.5">
                 {parseErrors.slice(0, 2).map((err, i) => (
                   <div key={i} className="truncate">• {err}</div>
                 ))}
@@ -154,23 +156,23 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
           {/* Loaded files chip list */}
           {files.length > 0 && (
             <div className="space-y-1.5 pt-1">
-              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-400">
+              <div className="text-[10px] font-mono uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Active Files ({files.length}):
               </div>
               <div className="flex flex-wrap gap-2 max-h-24 overflow-y-auto">
                 {files.map((file) => (
                   <div
                     key={file.id}
-                    className="bg-[#151a26] border border-[#232c3d] rounded px-2.5 py-1 flex items-center gap-2 text-xs font-mono"
+                    className="bg-slate-100 dark:bg-[#151a26] border border-slate-200 dark:border-[#232c3d] rounded px-2.5 py-1 flex items-center gap-2 text-xs font-mono"
                   >
                     {file.detectedOS.length > 0 && (
                       <span
                         className="w-2 h-2 rounded-xs flex-shrink-0"
-                        style={{ backgroundColor: getOSColor(file.detectedOS[0]) }}
+                        style={{ backgroundColor: getOSColor(file.detectedOS[0], isDark) }}
                         title={getFriendlyOSName(file.detectedOS[0])}
                       />
                     )}
-                    <span className="text-slate-200 text-[11px] truncate max-w-[130px]" title={file.name}>
+                    <span className="text-slate-800 dark:text-slate-200 text-[11px] truncate max-w-[130px]" title={file.name}>
                       {file.name}
                     </span>
                     <span className="text-slate-500 text-[10px]">
@@ -181,7 +183,7 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
                         e.stopPropagation();
                         onRemoveFile(file.id);
                       }}
-                      className="text-slate-500 hover:text-rose-400 p-0.5 rounded transition-colors ml-1"
+                      className="text-slate-400 hover:text-rose-600 dark:text-slate-500 dark:hover:text-rose-400 p-0.5 rounded transition-colors ml-1"
                       title="Remove file"
                     >
                       <Trash2 className="w-3 h-3" />
@@ -196,10 +198,10 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
         {/* Right Column: Workload Selector (7 cols) */}
         <div className="lg:col-span-7 flex flex-col justify-between space-y-3">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-300">
+            <span className="font-mono text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
               2. Workload Selector
             </span>
-            <span className="font-mono text-[11px] text-slate-500">
+            <span className="font-mono text-[11px] text-slate-400 dark:text-slate-500">
               5 Test Suites
             </span>
           </div>
@@ -217,24 +219,24 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
                   onClick={() => onSelectWorkload(name)}
                   className={`p-2.5 rounded-md border text-left transition-all flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-[#1a2333] border-sky-400 text-slate-100 shadow-sm'
-                      : 'bg-[#141924] border-[#222b3c] text-slate-400 hover:border-[#2f3b50] hover:text-slate-200'
+                      ? 'bg-sky-50 dark:bg-[#1a2333] border-sky-500 dark:border-sky-400 text-slate-900 dark:text-slate-100 shadow-xs'
+                      : 'bg-slate-50 dark:bg-[#141924] border-slate-200 dark:border-[#222b3c] text-slate-600 dark:text-slate-400 hover:border-slate-300 dark:hover:border-[#2f3b50] hover:text-slate-900 dark:hover:text-slate-200'
                   }`}
                 >
                   <div className="flex items-start justify-between gap-1 mb-1">
-                    <span className={`text-xs font-semibold leading-snug line-clamp-2 ${isSelected ? 'text-slate-100' : 'text-slate-300'}`}>
+                    <span className={`text-xs font-semibold leading-snug line-clamp-2 ${isSelected ? 'text-slate-900 dark:text-slate-100' : 'text-slate-700 dark:text-slate-300'}`}>
                       {name}
                     </span>
                     {isSelected && (
-                      <Check className="w-3 h-3 text-sky-400 flex-shrink-0 mt-0.5" />
+                      <Check className="w-3 h-3 text-sky-600 dark:text-sky-400 flex-shrink-0 mt-0.5" />
                     )}
                   </div>
                   <div className="flex items-center justify-between mt-1 text-[10px] font-mono">
-                    <span className="text-sky-400/90 truncate">
+                    <span className="text-sky-600 dark:text-sky-400/90 truncate">
                       {config?.typeTag}
                     </span>
                     {count > 0 && (
-                      <span className="text-slate-500">
+                      <span className="text-slate-400 dark:text-slate-500">
                         {count}p
                       </span>
                     )}
@@ -245,19 +247,20 @@ export const TopControlBar: React.FC<TopControlBarProps> = ({
           </div>
 
           {/* Active Workload Technical Note Banner */}
-          <div className="bg-[#141924] border border-[#202738] rounded-md px-3.5 py-2.5 flex items-center justify-between gap-3 text-xs">
+          <div className="bg-slate-100/70 dark:bg-[#141924] border border-slate-200 dark:border-[#202738] rounded-md px-3.5 py-2.5 flex items-center justify-between gap-3 text-xs">
             <div className="flex items-center gap-2 font-mono text-[11px]">
-              <span className="text-slate-400 font-bold uppercase">Active Benchmark:</span>
-              <span className="text-slate-200 font-semibold">{selectedWorkload}</span>
-              <span className="text-slate-500">·</span>
-              <span className="text-sky-400">[{activeConfig?.typeTag}]</span>
+              <span className="text-slate-500 dark:text-slate-400 font-bold uppercase">Active Benchmark:</span>
+              <span className="text-slate-800 dark:text-slate-200 font-semibold">{selectedWorkload}</span>
+              <span className="text-slate-300 dark:text-slate-500">·</span>
+              <span className="text-sky-600 dark:text-sky-400">[{activeConfig?.typeTag}]</span>
             </div>
-            <p className="text-[11px] text-slate-400 hidden sm:block truncate max-w-md">
+            <p className="text-[11px] text-slate-600 dark:text-slate-400 hidden sm:block truncate max-w-md">
               {activeConfig?.note}
             </p>
           </div>
         </div>
       </div>
     </div>
+
   );
 };

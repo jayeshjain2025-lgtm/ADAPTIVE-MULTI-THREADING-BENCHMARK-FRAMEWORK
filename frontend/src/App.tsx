@@ -150,7 +150,7 @@ export function App() {
   }, [handleLoadSamples]);
 
   return (
-    <div className="min-h-screen bg-[#0c0f14] text-slate-200 flex flex-col font-sans selection:bg-sky-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0c0f14] text-slate-800 dark:text-slate-200 flex flex-col font-sans selection:bg-sky-500 selection:text-white transition-colors duration-150">
       {/* Top Utility Bar */}
       <Header
         records={allRecords}
@@ -177,8 +177,8 @@ export function App() {
 
         {allRecords.length === 0 ? (
           /* Empty State */
-          <div className="border border-[#1f2737] rounded-lg p-10 text-center bg-[#121620] space-y-3">
-            <div className="font-mono text-xs font-bold uppercase tracking-wider text-slate-400">
+          <div className="border border-slate-200 dark:border-[#1f2737] rounded-lg p-10 text-center bg-white dark:bg-[#121620] space-y-3 shadow-xs">
+            <div className="font-mono text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               No Benchmark Data Loaded
             </div>
             <p className="text-xs text-slate-500 font-mono max-w-md mx-auto">
@@ -186,7 +186,7 @@ export function App() {
             </p>
             <button
               onClick={handleLoadSamples}
-              className="px-4 py-2 rounded bg-[#1c2333] hover:bg-[#252f44] border border-[#2d3950] text-slate-200 text-xs font-mono transition-colors"
+              className="px-4 py-2 rounded bg-slate-100 hover:bg-slate-200 dark:bg-[#1c2333] dark:hover:bg-[#252f44] border border-slate-300 dark:border-[#2d3950] text-slate-800 dark:text-slate-200 text-xs font-mono transition-colors"
             >
               Load Sample Datasets (WSL2 + Fedora)
             </button>

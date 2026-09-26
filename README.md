@@ -205,58 +205,58 @@ A useful reading order is:
 
 For example, high CPU utilization with falling efficiency usually means the machine is busy but additional threads are competing for limited execution resources. A nearly flat compression curve with high memory usage and context switching suggests that the sequential file-I/O portion, rather than raw CPU capacity, is limiting performance.
  
-+---
-+
-+## Interactive Web Frontend Dashboard
-+
-+An interactive modern web dashboard is provided in the `./frontend` directory to visualize, compare, and analyze multi-threaded C++ benchmarking telemetry across operating systems (e.g. Linux WSL2, Native Fedora, Windows Native, macOS Darwin).
-+
-+### Quick Start
-+
-+```bash
-+# Navigate to the frontend directory
-+cd frontend
-+
-+# Install dependencies
-+npm install
-+
-+# Launch Vite development server
-+npm run dev
-+```
-+
-+Open `http://localhost:5173/` in your browser.
-+
-+### Key Dashboard Capabilities
-+
-+1. **Multi-Platform Telemetry Ingestion**:
-+   - Drag-and-drop or select multiple `results.jsonl` files from different operating systems or benchmark runs.
-+   - Merges and parses JSON Lines telemetry in memory with instant sample data loading (WSL2 + Native Fedora + macOS).
-+
-+2. **Granular Workload Scaling Charts (Recharts)**:
-+   - **Execution Time vs Threads** with exact microsecond wall-time tracking.
-+   - **CPU Usage vs Threads** showing multicore utilization percentages.
-+   - **Speedup vs Threads** plotted against theoretical linear scaling reference lines.
-+   - **Efficiency vs Threads** tracking parallel efficiency against a 70% engineering threshold indicator.
-+   - Synchronized floating tooltips displaying CPU load and context switch preemption.
-+
-+3. **Cross-Platform Workload Comparison (Grouped Bar Chart)**:
-+   - Compares all 5 suites side-by-side at the **highest common thread count** (e.g., $T=24$).
-+   - Switchable metrics: **Speedup**, **Efficiency**, or **Wall Time (ms)**.
-+   - **Logarithmic Scale Compression (`log₁₀` / `symlog`)**: Includes a dedicated `Scale: [ Log (log₁₀) ] [ Linear ]` toggle. Log mode compresses orders-of-magnitude disparities so that sub-50ms workloads (Merge sort: ~13ms, Image processing: ~8ms) and long workloads (Compression: ~8,500ms) can be clearly compared across all platforms.
-+
-+4. **Recommended Thread Count Engine**:
-+   - Calculates concurrency tipping points per workload per OS where parallel efficiency drops below 70% of peak observed value.
-+   - Available in single-workload focus cards and all-workload matrix view.
-+
-+5. **Analytical Conclusion & Telemetry Insights**:
-+   - **Notable Performance Patterns**: Single-line summaries highlighting key telemetry findings (e.g., I/O bottlenecks, high-thread efficiency drops) with a top-3 default display and toggle.
-+   - **Workload Classification**: Groups suites into *Compute-bound* (scales well) and *I/O or memory-bound* (scales poorly) with concise key metrics.
-+   - **Cross-Platform Comparison Matrix**: Identifies performance winners and speedup margins per workload.
-+
-+6. **Telemetry Inspector Table**:
-+   - Single clean row per operating system showing averaged performance metrics across all workloads.
-+   - Expandable drilldown rows displaying granular per-run data points with live search and workload filters.
-+
-+7. **Dark Mode & Light Mode**:
-+   - Persistent theme toggle between dark graphite and clean light theme.
-+   - **Dual High-Contrast Palettes**: Automatically switches graph series colors between luminous neon for dark mode and rich saturated colors (Sapphire Blue `#0284c7` for WSL2, Forest Emerald `#059669` for Native Fedora) for high contrast in light mode.
+---
+
+## Interactive Web Frontend Dashboard
+
+An interactive modern web dashboard is provided in the `./frontend` directory to visualize, compare, and analyze multi-threaded C++ benchmarking telemetry across operating systems (e.g. Linux WSL2, Native Fedora, Windows Native, macOS Darwin).
+
+### Quick Start
+
+```bash
+# Navigate to the frontend directory
+cd frontend
+
+# Install dependencies
+npm install
+
+# Launch Vite development server
+npm run dev
+```
+
+Open `http://localhost:5173/` in your browser.
+
+### Key Dashboard Capabilities
+
+1. **Multi-Platform Telemetry Ingestion**:
+   - Drag-and-drop or select multiple `results.jsonl` files from different operating systems or benchmark runs.
+   - Merges and parses JSON Lines telemetry in memory with instant sample data loading (WSL2 + Native Fedora + macOS).
+
+2. **Granular Workload Scaling Charts (Recharts)**:
+   - **Execution Time vs Threads** with exact microsecond wall-time tracking.
+   - **CPU Usage vs Threads** showing multicore utilization percentages.
+   - **Speedup vs Threads** plotted against theoretical linear scaling reference lines.
+   - **Efficiency vs Threads** tracking parallel efficiency against a 70% engineering threshold indicator.
+   - Synchronized floating tooltips displaying CPU load and context switch preemption.
+
+3. **Cross-Platform Workload Comparison (Grouped Bar Chart)**:
+   - Compares all 5 suites side-by-side at the **highest common thread count** (e.g., $T=24$).
+   - Switchable metrics: **Speedup**, **Efficiency**, or **Wall Time (ms)**.
+   - **Logarithmic Scale Compression (`log₁₀` / `symlog`)**: Includes a dedicated `Scale: [ Log (log₁₀) ] [ Linear ]` toggle. Log mode compresses orders-of-magnitude disparities so that sub-50ms workloads (Merge sort: ~13ms, Image processing: ~8ms) and long workloads (Compression: ~8,500ms) can be clearly compared across all platforms.
+
+4. **Recommended Thread Count Engine**:
+   - Calculates concurrency tipping points per workload per OS where parallel efficiency drops below 70% of peak observed value.
+   - Available in single-workload focus cards and all-workload matrix view.
+
+5. **Analytical Conclusion & Telemetry Insights**:
+   - **Notable Performance Patterns**: Single-line summaries highlighting key telemetry findings (e.g., I/O bottlenecks, high-thread efficiency drops) with a top-3 default display and toggle.
+   - **Workload Classification**: Groups suites into *Compute-bound* (scales well) and *I/O or memory-bound* (scales poorly) with concise key metrics.
+   - **Cross-Platform Comparison Matrix**: Identifies performance winners and speedup margins per workload.
+
+6. **Telemetry Inspector Table**:
+   - Single clean row per operating system showing averaged performance metrics across all workloads.
+   - Expandable drilldown rows displaying granular per-run data points with live search and workload filters.
+
+7. **Dark Mode & Light Mode**:
+   - Persistent theme toggle between dark graphite and clean light theme.
+   - **Dual High-Contrast Palettes**: Automatically switches graph series colors between luminous neon for dark mode and rich saturated colors (Sapphire Blue `#0284c7` for WSL2, Forest Emerald `#059669` for Native Fedora) for high contrast in light mode.

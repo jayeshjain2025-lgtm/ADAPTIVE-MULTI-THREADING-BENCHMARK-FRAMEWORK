@@ -51,9 +51,11 @@ export interface WorkloadRecommendation {
   workloadName: string;
   peakEfficiency: number;
   peakThreadCount: number;
-  recommendedThreadCount: number | null; // where efficiency drops below 70% of peak
+  recommendedThreadCount: number | null;
   dropEfficiency: number | null;
   speedupAtRecommended: number | null;
+  cpuAtRecommended?: number;
+  score?: number;
   reason: string;
 }
 

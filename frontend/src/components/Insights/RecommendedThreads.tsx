@@ -15,7 +15,12 @@ export const RecommendedThreads: React.FC<RecommendedThreadsProps> = ({
 }) => {
   const { isDark } = useTheme();
   const [viewMode, setViewMode] = useState<'selected' | 'all'>('selected');
-  const recommendations = computeRecommendations(records);
+  const [formulaMode, setFormulaMode] = useState<'backend' | 'knee'>('backend');
+
+  const recommendations = computeRecommendations(
+    records,
+    formulaMode === 'backend' ? 'weighted_score' : 'efficiency_knee'
+  );
 
   if (!recommendations.length) return null;
 
@@ -32,36 +37,72 @@ export const RecommendedThreads: React.FC<RecommendedThreadsProps> = ({
             </span>
             <span className="text-slate-300 dark:text-[#334155] font-mono">/</span>
             <span className="font-mono text-[11px] text-sky-600 dark:text-sky-400">
-              70% Peak Efficiency Cutoff
+              {formulaMode === 'backend'
+                ? 'Backend Utility Score (50% Speedup / 30% Efficiency / 20% CPU)'
+                : '70% Peak Efficiency Cutoff'}
             </span>
           </div>
           <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
-            Recommends the thread count where parallel efficiency drops below 70% of peak observed efficiency for that workload and operating system.
+            {formulaMode === 'backend'
+              ? "Recommends the configuration maximizing the C++ backend's multi-objective weighted utility score (0.5 · Speedup + 0.3 · Efficiency + 0.2 · CPU) matching terminal output."
+              : 'Recommends the thread count where parallel efficiency drops below 70% of peak observed efficiency for that workload and operating system.'}
           </p>
         </div>
 
-        {/* Toggle between Selected vs All */}
-        <div className="flex items-center bg-slate-100 dark:bg-[#0d1017] p-1 rounded-md border border-slate-200 dark:border-[#222a3a] text-xs font-mono">
-          <button
-            onClick={() => setViewMode('selected')}
-            className={`px-3 py-1 rounded transition-colors ${
-              viewMode === 'selected'
-                ? 'bg-white dark:bg-[#1e2638] text-slate-900 dark:text-slate-100 font-semibold shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
-          >
-            {selectedWorkload}
-          </button>
-          <button
-            onClick={() => setViewMode('all')}
-            className={`px-3 py-1 rounded transition-colors ${
-              viewMode === 'all'
-                ? 'bg-white dark:bg-[#1e2638] text-slate-900 dark:text-slate-100 font-semibold shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-            }`}
-          >
-            All 5 Workloads Matrix
-          </button>
+        {/* Controls: Formula selector & View mode selector */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Formula Mode Toggle */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-[#0d1017] p-1 rounded-md border border-slate-200 dark:border-[#222a3a] text-xs font-mono">
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase font-bold px-1.5">
+              Formula:
+            </span>
+            <button
+              onClick={() => setFormulaMode('backend')}
+              className={`px-2.5 py-0.5 rounded text-[11px] transition-colors ${
+                formulaMode === 'backend'
+                  ? 'bg-sky-600 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+              title="Matches the exact C++ backend terminal formula (50% Speedup, 30% Efficiency, 20% CPU)"
+            >
+              Backend (50/30/20)
+            </button>
+            <button
+              onClick={() => setFormulaMode('knee')}
+              className={`px-2.5 py-0.5 rounded text-[11px] transition-colors ${
+                formulaMode === 'knee'
+                  ? 'bg-sky-600 text-white font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+              title="Amdahl 70% Peak Efficiency Cutoff"
+            >
+              70% Efficiency Cutoff
+            </button>
+          </div>
+
+          {/* Toggle between Selected vs All */}
+          <div className="flex items-center bg-slate-100 dark:bg-[#0d1017] p-1 rounded-md border border-slate-200 dark:border-[#222a3a] text-xs font-mono">
+            <button
+              onClick={() => setViewMode('selected')}
+              className={`px-3 py-1 rounded transition-colors ${
+                viewMode === 'selected'
+                  ? 'bg-white dark:bg-[#1e2638] text-slate-900 dark:text-slate-100 font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              {selectedWorkload}
+            </button>
+            <button
+              onClick={() => setViewMode('all')}
+              className={`px-3 py-1 rounded transition-colors ${
+                viewMode === 'all'
+                  ? 'bg-white dark:bg-[#1e2638] text-slate-900 dark:text-slate-100 font-semibold shadow-xs'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+              }`}
+            >
+              All 5 Workloads Matrix
+            </button>
+          </div>
         </div>
       </div>
 
@@ -120,25 +161,56 @@ export const RecommendedThreads: React.FC<RecommendedThreadsProps> = ({
 
                   {/* Numerical Grid in JetBrains Mono */}
                   <div className="bg-slate-100/80 dark:bg-[#0f131c] border border-slate-200 dark:border-[#1d2433] rounded p-3 text-[11px] font-mono space-y-1.5">
-                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                      <span>Observed Peak Efficiency:</span>
-                      <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                        {(rec.peakEfficiency * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                      <span>70% Drop-off Threshold:</span>
-                      <span className="text-amber-600 dark:text-amber-400 font-semibold">
-                        {(threshold * 100).toFixed(1)}%
-                      </span>
-                    </div>
-                    {rec.dropEfficiency && (
-                      <div className="flex justify-between text-slate-600 dark:text-slate-400">
-                        <span>Efficiency at Recommended:</span>
-                        <span className="text-slate-900 dark:text-slate-100 font-bold">
-                          {(rec.dropEfficiency * 100).toFixed(1)}%
-                        </span>
-                      </div>
+                    {formulaMode === 'backend' ? (
+                      <>
+                        <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                          <span>Composite Score:</span>
+                          <span className="text-sky-600 dark:text-sky-400 font-bold">
+                            {rec.score?.toFixed(3)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                          <span>Efficiency at Rec.:</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                            {rec.dropEfficiency ? `${(rec.dropEfficiency * 100).toFixed(1)}%` : '-'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                          <span>CPU Core Load:</span>
+                          <span className="text-purple-600 dark:text-purple-400 font-semibold">
+                            {rec.cpuAtRecommended != null ? `${rec.cpuAtRecommended.toFixed(1)}%` : '-'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                          <span>Observed Peak Efficiency:</span>
+                          <span className="text-slate-700 dark:text-slate-300">
+                            {(rec.peakEfficiency * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                          <span>Observed Peak Efficiency:</span>
+                          <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
+                            {(rec.peakEfficiency * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                          <span>70% Drop-off Threshold:</span>
+                          <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                            {(threshold * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                        {rec.dropEfficiency && (
+                          <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                            <span>Efficiency at Recommended:</span>
+                            <span className="text-slate-900 dark:text-slate-100 font-bold">
+                              {(rec.dropEfficiency * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -158,11 +230,24 @@ export const RecommendedThreads: React.FC<RecommendedThreadsProps> = ({
               <tr>
                 <th className="py-2.5 px-3.5">Workload</th>
                 <th className="py-2.5 px-3.5">Platform</th>
-                <th className="py-2.5 px-3.5 text-right">Peak Efficiency</th>
-                <th className="py-2.5 px-3.5 text-right">70% Threshold</th>
-                <th className="py-2.5 px-3.5 text-center">Recommended</th>
-                <th className="py-2.5 px-3.5 text-right">Speedup</th>
-                <th className="py-2.5 px-3.5">Scaling Assessment</th>
+                {formulaMode === 'backend' ? (
+                  <>
+                    <th className="py-2.5 px-3.5 text-right">Utility Score</th>
+                    <th className="py-2.5 px-3.5 text-center">Recommended</th>
+                    <th className="py-2.5 px-3.5 text-right">Speedup</th>
+                    <th className="py-2.5 px-3.5 text-right">Efficiency</th>
+                    <th className="py-2.5 px-3.5 text-right">CPU Load</th>
+                    <th className="py-2.5 px-3.5">Assessment</th>
+                  </>
+                ) : (
+                  <>
+                    <th className="py-2.5 px-3.5 text-right">Peak Efficiency</th>
+                    <th className="py-2.5 px-3.5 text-right">70% Threshold</th>
+                    <th className="py-2.5 px-3.5 text-center">Recommended</th>
+                    <th className="py-2.5 px-3.5 text-right">Speedup</th>
+                    <th className="py-2.5 px-3.5">Scaling Assessment</th>
+                  </>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-[#1e2637] font-mono text-[11px]">
@@ -185,23 +270,50 @@ export const RecommendedThreads: React.FC<RecommendedThreadsProps> = ({
                         {getFriendlyOSName(rec.os)}
                       </span>
                     </td>
-                    <td className="py-2.5 px-3.5 text-right text-emerald-600 dark:text-emerald-400">
-                      {(rec.peakEfficiency * 100).toFixed(1)}% (T={rec.peakThreadCount})
-                    </td>
-                    <td className="py-2.5 px-3.5 text-right text-amber-600 dark:text-amber-400">
-                      {(threshold * 100).toFixed(1)}%
-                    </td>
-                    <td className="py-2.5 px-3.5 text-center">
-                      <span className="px-2.5 py-0.5 rounded bg-sky-100 dark:bg-[#1f293d] border border-sky-300 dark:border-[#2e3c54] text-sky-700 dark:text-sky-300 font-bold">
-                        {rec.recommendedThreadCount} T
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-3.5 text-right text-slate-900 dark:text-slate-200 font-bold">
-                      {rec.speedupAtRecommended ? `${rec.speedupAtRecommended.toFixed(2)}x` : '-'}
-                    </td>
-                    <td className="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 text-[11px]">
-                      {rec.reason}
-                    </td>
+                    {formulaMode === 'backend' ? (
+                      <>
+                        <td className="py-2.5 px-3.5 text-right text-sky-600 dark:text-sky-400 font-bold">
+                          {rec.score?.toFixed(3) ?? '-'}
+                        </td>
+                        <td className="py-2.5 px-3.5 text-center">
+                          <span className="px-2.5 py-0.5 rounded bg-sky-100 dark:bg-[#1f293d] border border-sky-300 dark:border-[#2e3c54] text-sky-700 dark:text-sky-300 font-bold">
+                            {rec.recommendedThreadCount} T
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3.5 text-right text-slate-900 dark:text-slate-200 font-bold">
+                          {rec.speedupAtRecommended ? `${rec.speedupAtRecommended.toFixed(2)}x` : '-'}
+                        </td>
+                        <td className="py-2.5 px-3.5 text-right text-emerald-600 dark:text-emerald-400">
+                          {rec.dropEfficiency ? `${(rec.dropEfficiency * 100).toFixed(1)}%` : '-'}
+                        </td>
+                        <td className="py-2.5 px-3.5 text-right text-purple-600 dark:text-purple-400">
+                          {rec.cpuAtRecommended != null ? `${rec.cpuAtRecommended.toFixed(1)}%` : '-'}
+                        </td>
+                        <td className="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 text-[11px]">
+                          {rec.reason}
+                        </td>
+                      </>
+                    ) : (
+                      <>
+                        <td className="py-2.5 px-3.5 text-right text-emerald-600 dark:text-emerald-400">
+                          {(rec.peakEfficiency * 100).toFixed(1)}% (T={rec.peakThreadCount})
+                        </td>
+                        <td className="py-2.5 px-3.5 text-right text-amber-600 dark:text-amber-400">
+                          {(threshold * 100).toFixed(1)}%
+                        </td>
+                        <td className="py-2.5 px-3.5 text-center">
+                          <span className="px-2.5 py-0.5 rounded bg-sky-100 dark:bg-[#1f293d] border border-sky-300 dark:border-[#2e3c54] text-sky-700 dark:text-sky-300 font-bold">
+                            {rec.recommendedThreadCount} T
+                          </span>
+                        </td>
+                        <td className="py-2.5 px-3.5 text-right text-slate-900 dark:text-slate-200 font-bold">
+                          {rec.speedupAtRecommended ? `${rec.speedupAtRecommended.toFixed(2)}x` : '-'}
+                        </td>
+                        <td className="py-2.5 px-3.5 text-slate-600 dark:text-slate-400 text-[11px]">
+                          {rec.reason}
+                        </td>
+                      </>
+                    )}
                   </tr>
                 );
               })}

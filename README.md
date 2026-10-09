@@ -244,9 +244,10 @@ Open `http://localhost:5173/` in your browser.
    - Switchable metrics: **Speedup**, **Efficiency**, or **Wall Time (ms)**.
    - **Logarithmic Scale Compression (`log₁₀` / `symlog`)**: Includes a dedicated `Scale: [ Log (log₁₀) ] [ Linear ]` toggle. Log mode compresses orders-of-magnitude disparities so that sub-50ms workloads (Merge sort: ~13ms, Image processing: ~8ms) and long workloads (Compression: ~8,500ms) can be clearly compared across all platforms.
 
-4. **Recommended Thread Count Engine**:
-   - Calculates concurrency tipping points per workload per OS where parallel efficiency drops below 70% of peak observed value.
-   - Available in single-workload focus cards and all-workload matrix view.
+4. **Recommended Thread Count Engine (Unified Backend Alignment)**:
+   - **Unified Backend Utility Score (Default)**: Employs the identical multi-objective weighted utility formula from `results.cpp` (`Score = 0.5 · Speedup/MaxSpeedup + 0.3 · Efficiency/MaxEfficiency + 0.2 · CPU/MaxCPU`), guaranteeing **100% exact alignment** between backend terminal output and frontend dashboard recommendations.
+   - **70% Efficiency Cutoff Toggle**: Allows switching on the fly to inspect the classical Amdahl knee tipping point where parallel efficiency drops below 70% of peak observed value.
+   - Available in both single-workload focus cards and an all-workload 5-suite comparison matrix.
 
 5. **Analytical Conclusion & Telemetry Insights**:
    - **Notable Performance Patterns**: Single-line summaries highlighting key telemetry findings (e.g., I/O bottlenecks, high-thread efficiency drops) with a top-3 default display and toggle.

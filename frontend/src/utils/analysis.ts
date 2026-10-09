@@ -174,10 +174,17 @@ export function prepareGroupedBarData(
 }
 
 /**
- * Requirement 5: "A 'Recommended Thread Count' panel per workload per OS:
- * the thread_count where derived.efficiency drops below 70% of its peak value for that workload+OS."
+ * Concurrency recommendation engine.
+ * Supports two algorithms:
+ * 1. 'weighted_score' (Default - Exact C++ Backend formula from results.cpp):
+ *    Score = 0.5 * (Speedup / MaxSpeedup) + 0.3 * (Efficiency / MaxEfficiency) + 0.2 * (CPU% / MaxCPU%)
+ * 2. 'efficiency_knee' (Amdahl 70% Cutoff):
+ *    First thread count where efficiency drops below 70% of peak observed value.
  */
-export function computeRecommendations(records: BenchmarkRecord[]): WorkloadRecommendation[] {
+export function computeRecommendations(
+  records: BenchmarkRecord[],
+  mode: 'weighted_score' | 'efficiency_knee' = 'weighted_score'
+): WorkloadRecommendation[] {
   const osList = getDistinctOSList(records);
   const workloads = getDistinctWorkloads(records);
   const recommendations: WorkloadRecommendation[] = [];
@@ -201,35 +208,72 @@ export function computeRecommendations(records: BenchmarkRecord[]): WorkloadReco
         }
       }
 
-      const threshold70 = 0.7 * peakEfficiency;
+      if (mode === 'weighted_score') {
+        // EXACT BACKEND C++ FORMULA: 50% Speedup, 30% Efficiency, 20% CPU Utilization
+        const maxSpeedup = Math.max(...subset.map((r) => r.derived.speedup)) || 1;
+        const maxEff = Math.max(...subset.map((r) => r.derived.efficiency)) || 1;
+        const maxCpu = Math.max(...subset.map((r) => r.measurements.cpu_utilization_percent)) || 1;
 
-      // Find first thread count where efficiency drops below 70% of peak value
-      const dropRecord = subset.find((rec) => rec.derived.efficiency < threshold70);
+        let best = subset[0];
+        let bestScore = -1;
 
-      if (dropRecord) {
+        for (const r of subset) {
+          const score =
+            0.5 * (r.derived.speedup / maxSpeedup) +
+            0.3 * (r.derived.efficiency / maxEff) +
+            0.2 * (r.measurements.cpu_utilization_percent / maxCpu);
+
+          if (score > bestScore) {
+            bestScore = score;
+            best = r;
+          }
+        }
+
         recommendations.push({
           os,
           workloadName: wName,
           peakEfficiency,
           peakThreadCount,
-          recommendedThreadCount: dropRecord.configuration.thread_count,
-          dropEfficiency: dropRecord.derived.efficiency,
-          speedupAtRecommended: dropRecord.derived.speedup,
-          reason: `Efficiency fell to ${(dropRecord.derived.efficiency * 100).toFixed(1)}% (below 70% of peak ${(peakEfficiency * 100).toFixed(1)}%) at ${dropRecord.configuration.thread_count} threads.`,
+          recommendedThreadCount: best.configuration.thread_count,
+          dropEfficiency: best.derived.efficiency,
+          speedupAtRecommended: best.derived.speedup,
+          cpuAtRecommended: best.measurements.cpu_utilization_percent,
+          score: bestScore,
+          reason: `Recommended by C++ backend formula (Score: ${bestScore.toFixed(3)}): 50% speedup, 30% efficiency, 20% CPU load.`,
         });
       } else {
-        // Did not drop below 70% of peak within tested threads
-        const maxTested = subset[subset.length - 1];
-        recommendations.push({
-          os,
-          workloadName: wName,
-          peakEfficiency,
-          peakThreadCount,
-          recommendedThreadCount: maxTested.configuration.thread_count,
-          dropEfficiency: maxTested.derived.efficiency,
-          speedupAtRecommended: maxTested.derived.speedup,
-          reason: `Maintained high efficiency (>= ${(threshold70 * 100).toFixed(1)}%) through all tested threads (up to ${maxTested.configuration.thread_count} threads).`,
-        });
+        const threshold70 = 0.7 * peakEfficiency;
+
+        // Find first thread count where efficiency drops below 70% of peak value
+        const dropRecord = subset.find((rec) => rec.derived.efficiency < threshold70);
+
+        if (dropRecord) {
+          recommendations.push({
+            os,
+            workloadName: wName,
+            peakEfficiency,
+            peakThreadCount,
+            recommendedThreadCount: dropRecord.configuration.thread_count,
+            dropEfficiency: dropRecord.derived.efficiency,
+            speedupAtRecommended: dropRecord.derived.speedup,
+            cpuAtRecommended: dropRecord.measurements.cpu_utilization_percent,
+            reason: `Efficiency fell to ${(dropRecord.derived.efficiency * 100).toFixed(1)}% (below 70% of peak ${(peakEfficiency * 100).toFixed(1)}%) at ${dropRecord.configuration.thread_count} threads.`,
+          });
+        } else {
+          // Did not drop below 70% of peak within tested threads
+          const maxTested = subset[subset.length - 1];
+          recommendations.push({
+            os,
+            workloadName: wName,
+            peakEfficiency,
+            peakThreadCount,
+            recommendedThreadCount: maxTested.configuration.thread_count,
+            dropEfficiency: maxTested.derived.efficiency,
+            speedupAtRecommended: maxTested.derived.speedup,
+            cpuAtRecommended: maxTested.measurements.cpu_utilization_percent,
+            reason: `Maintained high efficiency (>= ${(threshold70 * 100).toFixed(1)}%) through all tested threads (up to ${maxTested.configuration.thread_count} threads).`,
+          });
+        }
       }
     }
   }
